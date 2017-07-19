@@ -84,6 +84,12 @@ func Authorizer(e *casbin.Enforcer, config Config) baa.HandlerFunc {
 		obj := c.RouteName()
 		act := strings.ToLower(c.Req.Method)
 
+		// Preventing data inconsistency in Distributed Systems，so execute LoadPlicy
+		err = e.LoadPolicy()
+		if err != nil {
+			config.ErrorHandler(c, DefaultNoPermString)
+		}
+
 		if e.Enforce(user, obj, act) {
 			c.Next()
 		} else {
